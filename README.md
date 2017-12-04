@@ -1,7 +1,7 @@
-# DataArraysBinning.jl
+Binning.jl
 Helper functions to pre-process continuous data by quantizing it into discrete bins.
 
-DataFrames and DataArrays are super useful. However, there are some problems that are hard to work on with them. The problem I had when I opted to create this solution was I had a small sample of slot machine data, 1M rows, and there was a similarity index that was floating numbers between 0.0 and 1.0. 0.2999 is different than 0.2998 and 3.0 which means that, though they are very close, a lot of analysis functions will miss the bigger picture. The way this can be solved is by binning. So imagine being able to take an array with millions of these values and properly binning them.
+With binning, continuous data is fit to finite sized ranges, we call bins, that allow for groups of points to be handled discretely. There is some data loss, but we accept that data loss by gaining the ability to do further analysis. How the bins are set is important. If bins are set up incorrectly it may be very difficult to get useful results. For example, if your data has a strong left or right bias, the majority of the data may end up in one or two bins. This library has flexible bin widths. You can set your own exactly as you like, or you can use the included methods to set equal distance bins, equal frequency bins, as well as left tailed and right tailed bins.
 
 ```julia
 da = DataArray(rand(10000000))
