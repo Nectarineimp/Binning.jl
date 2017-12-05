@@ -7,7 +7,9 @@ SampleSpaceTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> bins is 
 BinsTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> bins must be at least 2.")
 BinWidthTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> The calculated width of the bins is too small for sample space. Add more data or reduce bins.")
 
-"Produces a StepRangeLen of floats used to create bins, based on a spread
+"equaldistancelimits(dv::Vector{<:AbstractFloat}, bins::Signed)
+
+Produces a StepRangeLen of floats used to create bins, based on a spread
 from the minimum to the maximum value of elements given."
 function equaldistancelimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     min = minimum(dv)
@@ -16,7 +18,9 @@ function equaldistancelimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     return(min:binwidth:max)
 end
 
-"Produces a vector of floats used to create bins, based upon an equal frequency
+"equalfrequencylimits(dv::Vector{<:AbstractFloat}, bins::Signed)
+
+Produces a vector of floats used to create bins, based upon an equal frequency
 division of the number of given elements after the range has been sorted.
 If the number of elements is not evenly divided by the number of bins, the extra
 elements are added to the last bin.
@@ -42,7 +46,9 @@ function equalfrequencylimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     return binrange
 end
 
-"This function finds which of the given bins the value belongs to."
+"find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
+
+This function finds which of the given bins the value belongs to."
 function find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
     bin = Union{Missing, Int16}(missing)
     for i in 2:length(limits)
@@ -58,7 +64,9 @@ function find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
     bin
 end
 
-"This function finds which of the given bins the value belongs to."
+"find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(x, 10))
+
+This function finds which of the given bins the value belongs to."
 function find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(x, 10))
     bin = Union{Missing, Int16}(missing)
     for i in 1:length(limits)
@@ -74,7 +82,9 @@ function find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat}=equald
     bin
 end
 
-"This produces a vector, the same length as the data, containing the bin values."
+"binindex(dv::Vector{<:AbstractFloat}, limits::Vector{<:AbstractFloat})
+
+This produces a vector, the same length as the data, containing the bin values."
 function binindex(dv::Vector{<:AbstractFloat}, limits::Vector{<:AbstractFloat})
     vbins = zeros(Int16, length(dv))
     for i in 1:length(dv)
@@ -83,7 +93,9 @@ function binindex(dv::Vector{<:AbstractFloat}, limits::Vector{<:AbstractFloat})
     vbins
 end
 
-"This produces a vector, the same length as the data, containing the bin values."
+"binindex(dv::Vector{<:AbstractFloat}, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(dv, 10))
+
+This produces a vector, the same length as the data, containing the bin values."
 function binindex(dv::Vector{<:AbstractFloat}, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(dv, 10))
     vbins = zeros(Int16, length(dv))
     for i in 1:length(dv)
@@ -92,12 +104,16 @@ function binindex(dv::Vector{<:AbstractFloat}, limits::StepRangeLen{<:AbstractFl
     vbins
 end
 
-"This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
+"binsupport(dv::Vector{Int16}, limits::Vector{<:Signed})
+
+This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
 function binsupport(dv::Vector{Int16}, limits::Vector{<:Signed})
     map(λ -> (λ, sum(dv .== λ)), limits)
 end
 
-"This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
+"binsupport(dv::Vector{Int16}, limits::UnitRange{<:Signed})
+
+This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
 function binsupport(dv::Vector{Int16}, limits::UnitRange{<:Signed})
     map(λ -> (λ, sum(dv .== λ)), limits)
 end

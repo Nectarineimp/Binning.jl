@@ -1,5 +1,5 @@
 rn = randn(1000)
-bi = binindex(rn, equaldistancelimits(rn, 10))
-support = binsupport(rn, 1:10)
+bi = Binning.binindex(rn, equaldistancelimits(rn, 11))
+support = binsupport(bi, 1:11)
 xvals = map(x->first(x), support)
 yvals = map(x->last(x), support)

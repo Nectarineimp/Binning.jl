@@ -1,11 +1,11 @@
 __precompile__()
 
-module DataArraysBinning
+module Binning
     using Missings
 
     # import Base: ==, !=, >, <, >=, <=, +, -, *, !, &, |, ⊻, ^, /
 
-    # export @data,
+    export equaldistancelimits, find_bin, binindex, binsupport
 
-    include("binning.jl")
+    include("BinningUtils.jl")
 end
