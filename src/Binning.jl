@@ -1,7 +1,7 @@
 __precompile__()
 
 module DataArraysBinning
-    using DataArrays
+    using Missings
 
     # import Base: ==, !=, >, <, >=, <=, +, -, *, !, &, |, ⊻, ^, /
 

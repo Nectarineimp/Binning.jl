@@ -3,29 +3,25 @@
 # 1 to however many bins are selected. This allows for continuous data to be used
 # for classification or histograms or other analysis.
 
-using DataFrames
-
 SampleSpaceTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> bins is not less than the length of dv. Reduce bins.")
 BinsTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> bins must be at least 2.")
 BinWidthTooSmall = AssertionError("equalfrequencylimits(dv, bins) -> The calculated width of the bins is too small for sample space. Add more data or reduce bins.")
 
-"""
-Produces a StepRangeLen of floats used to create bins, based on a spread
-from the minimum to the maximum value of elements given.
-"""
+"Produces a StepRangeLen of floats used to create bins, based on a spread
+from the minimum to the maximum value of elements given."
 function equaldistancelimits(dv::Vector{<:AbstractFloat}, bins::Signed)
-    min = minimum(dv); max = maximum(dv); binwidth = (max-min)/bins
+    min = minimum(dv)
+    max = maximum(dv)
+    binwidth = (max-min)/(bins-1)
     return(min:binwidth:max)
 end
 
-"""
-Produces a vector of floats used to create bins, based upon an equal frequency
+"Produces a vector of floats used to create bins, based upon an equal frequency
 division of the number of given elements after the range has been sorted.
 If the number of elements is not evenly divided by the number of bins, the extra
 elements are added to the last bin.
 
-For example: 100 elements, 9 bins, produces 8 bins of 11 elements and 1 bin of 12.
-"""
+For example: 100 elements, 9 bins, produces 8 bins of 11 elements and 1 bin of 12."
 function equalfrequencylimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     if bins > length(dv)
         throw(SampleSpaceTooSmall)
@@ -46,70 +42,65 @@ function equalfrequencylimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     return binrange
 end
 
+"This function finds which of the given bins the value belongs to."
 function find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
-    bin = length(limits) + 1
-    for i in 1:length(limits)
-        if x < limits[i]
+    bin = Union{Missing, Int16}(missing)
+    for i in 2:length(limits)
+        if x <= limits[i]
             bin = i
             break
         end
     end
-    bin
-end
-
-function find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat})
-    bin = length(limits) + 1
-    for i in 1:length(limits)
-        if x < limits[i]
-            bin = i
-            break
-        end
+    if ismissing(bin)
+        println(x, "\n limits:", limits, "\n")
+        return(0)
     end
     bin
 end
 
+"This function finds which of the given bins the value belongs to."
+function find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(x, 10))
+    bin = Union{Missing, Int16}(missing)
+    for i in 1:length(limits)
+        if x <= limits[i]
+            bin = i
+            break
+        end
+    end
+    if ismissing(bin)
+        println(x, "\n limits:", limits, "\n")
+        return(0)
+    end
+    bin
+end
+
+"This produces a vector, the same length as the data, containing the bin values."
 function binindex(dv::Vector{<:AbstractFloat}, limits::Vector{<:AbstractFloat})
-    vbins = zeros(Int64, length(dv))
+    vbins = zeros(Int16, length(dv))
     for i in 1:length(dv)
         vbins[i] = find_bin(dv[i], limits)
     end
     vbins
 end
 
-function binindex(dv::Vector{<:AbstractFloat}, limits::StepRangeLen{<:AbstractFloat})
-    vbins = zeros(Int64, length(dv))
+"This produces a vector, the same length as the data, containing the bin values."
+function binindex(dv::Vector{<:AbstractFloat}, limits::StepRangeLen{<:AbstractFloat}=equaldistancelimits(dv, 10))
+    vbins = zeros(Int16, length(dv))
     for i in 1:length(dv)
         vbins[i] = find_bin(dv[i], limits)
     end
     vbins
 end
 
+"This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
+function binsupport(dv::Vector{Int16}, limits::Vector{<:Signed})
+    map(λ -> (λ, sum(dv .== λ)), limits)
+end
+
+"This produces a vector of tuples that contains the bin and the support, or number of samples seen, for that bin."
+function binsupport(dv::Vector{Int16}, limits::UnitRange{<:Signed})
+    map(λ -> (λ, sum(dv .== λ)), limits)
+end
+
+# TODO: Missings support
 # TODO: Group binning
-# function group_bins{T}(df::AbstractDataFrame, col::T, limits::Vector{AbstractFloat})
-#     n_bins = length(limits) + 1
-#
-#     vbins = find_bins(df[col], limits)
-#     (idx, starts) = DataArrays.groupsort_indexer(vbins, n_bins)
-#
-#     # Remove zero-length groupings
-#     starts = _uniqueofsorted(starts)
-#     ends = [starts[2:end] - 1]
-#     GroupedDataFrame(df, [col], idx, starts[1:end-1], ends)
-# end
-#
-# function group_bins{T}(df::AbstractDataFrame, col::T, limits::StepRangeLen{AbstractFloat})
-#     n_bins = length(limits) + 1
-#
-#     vbins = find_bins(df[col], limits)
-#     (idx, starts) = DataArrays.groupsort_indexer(vbins, n_bins)
-#
-#     # Remove zero-length groupings
-#     starts = unique(starts)
-#     ends = [starts[2:end] - 1]
-#     GroupedDataFrame(df, [col], idx, starts[1:end-1], ends)
-# end
-
-# x = [0.62, 0.99, 0.52, 0.03, 0.55, 0.74, 0.49, 0.31, 0.62, 0.19]
-# x_df = DataFrame(X=x, Y=rand(10))
-#
-# group_bins(x_df, :X, range(0.0, 0.5, 20))
