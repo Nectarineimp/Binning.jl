@@ -33,17 +33,20 @@ function equalfrequencylimits(dv::Vector{<:AbstractFloat}, bins::Signed)
     if bins < 2
         throw(BinsTooSmall)
     end
-    sorteddv = sort(dv)
-    elements = length(dv); binwidth = div(elements, bins)
-    if binwidth < 1
+    dv = sort(dv)
+    elements = length(dv)
+    binwidth = elements/bins
+
+    if binwidth < 1.0
         throw(BinWidthTooSmall)
     end
+
     binrange = zeros(Float64, bins)
     for i in 1:bins
-        binrange[i] = dv[i*binwidth]
+        binrange[i] = dv[Int(floor(i*binwidth))]
     end
-    if mod(elements,bins) > 0 binrange[end] = dv[end] end
-    return binrange
+    binrange[end] = dv[end]
+    return sort(binrange)
 end
 
 "find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
@@ -51,15 +54,11 @@ end
 This function finds which of the given bins the value belongs to."
 function find_bin(x::AbstractFloat, limits::Vector{<:AbstractFloat})
     bin = Union{Missing, Int16}(missing)
-    for i in 2:length(limits)
+    for i in 1:length(limits)
         if x <= limits[i]
             bin = i
             break
         end
-    end
-    if ismissing(bin)
-        println(x, "\n limits:", limits, "\n")
-        return(0)
     end
     bin
 end
@@ -74,10 +73,6 @@ function find_bin(x::AbstractFloat, limits::StepRangeLen{<:AbstractFloat}=equald
             bin = i
             break
         end
-    end
-    if ismissing(bin)
-        println(x, "\n limits:", limits, "\n")
-        return(0)
     end
     bin
 end
